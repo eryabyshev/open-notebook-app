@@ -25,6 +25,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from commands import register_commands
 from surreal_commands.cli.worker import main
 
 
@@ -41,6 +42,7 @@ def _default_argv() -> None:
 
 def run() -> None:
     _default_argv()
+    register_commands()
     frozen = getattr(sys, "frozen", False)
     print(f"Starting Open Notebook worker (frozen={frozen})")
     main()

@@ -4,7 +4,7 @@
 
 **Цель:** один installer, offline-first данные на машине пользователя, UI в Electron, backend упакован через PyInstaller.
 
-**Статус:** Фаза 2 — Electron shell (scaffold)  
+**Статус:** Фаза 3 — standalone frontend bundle  
 **Ориентир до beta:** 4–6 недель (после успешного spike)
 
 ---
@@ -165,10 +165,12 @@ resources/                  # артеfact сборки (gitignore)
 
 ### Фаза 3 — Frontend bundle (3–5 дней)
 
-- [ ] `npm run build` → копировать `.next/standalone` в `resources/frontend/`
-- [ ] Spawn: `node server.js` с `PORT=8502`, `HOSTNAME=127.0.0.1`
-- [ ] Проверить file upload до 100 MB (`proxyClientMaxBodySize` в `next.config.ts`)
-- [ ] Проверить SSE routes: `/api/search/ask`, source chat messages
+- [x] `npm run build` → копировать `.next/standalone` в `resources/frontend/` (`desktop/build_frontend.sh`)
+- [x] Spawn: `node server.js` с `PORT=8502`, `HOSTNAME=127.0.0.1` (Electron: `ELECTRON_RUN_AS_NODE` в packaged)
+- [x] `OPEN_NOTEBOOK_FRONTEND_MODE=standalone` + `npm run dev:standalone` в Electron
+- [x] `proxyClientMaxBodySize: 100mb` уже в `frontend/next.config.ts`
+- [ ] Ручная проверка: upload PDF до 100 MB через standalone UI
+- [ ] Ручная проверка: SSE routes (`/api/search/ask`, source chat messages)
 
 ### Фаза 4 — Бинарные зависимости + packaging (1 неделя)
 

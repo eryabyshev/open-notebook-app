@@ -17,6 +17,8 @@ export interface DesktopPaths {
   apiBin: string | null;
   workerBin: string | null;
   frontendStandaloneServer: string | null;
+  frontendStandaloneDir: string | null;
+  useStandaloneFrontend: boolean;
   isPackaged: boolean;
   isDev: boolean;
   uiUrl: string;
@@ -84,16 +86,13 @@ export function resolveDesktopPaths(): DesktopPaths {
   const surrealBinName = process.platform === "win32" ? "surreal.exe" : "surreal";
   const surrealBin = resolveSurrealBin(resourcesDir, surrealBinName);
 
-  const frontendStandaloneServer = path.join(
-    frontendDir,
-    ".next",
-    "standalone",
-    "server.js"
-  );
-  const hasStandalone = fs.existsSync(frontendStandaloneServer);
+  const { server: frontendStandaloneServer, dir: frontendStandaloneDir } =
+    resolveFrontendStandalone(resourcesDir, repoRoot);
 
-  const useDevFrontend =
-    isDev && process.env.OPEN_NOTEBOOK_FRONTEND_MODE !== "standalone";
+  const useStandaloneFrontend =
+    isPackaged || process.env.OPEN_NOTEBOOK_FRONTEND_MODE === "standalone";
+
+  const useDevFrontend = isDev && !useStandaloneFrontend;
 
   const uiPort = useDevFrontend ? FRONTEND_DEV_PORT : FRONTEND_PROD_PORT;
   const uiUrl = `http://localhost:${uiPort}`;
@@ -112,11 +111,31 @@ export function resolveDesktopPaths(): DesktopPaths {
     surrealBin,
     apiBin,
     workerBin,
-    frontendStandaloneServer: hasStandalone ? frontendStandaloneServer : null,
+    frontendStandaloneServer,
+    frontendStandaloneDir,
+    useStandaloneFrontend,
     isPackaged,
     isDev,
     uiUrl,
   };
+}
+
+function resolveFrontendStandalone(
+  resourcesDir: string,
+  repoRoot: string
+): { server: string | null; dir: string | null } {
+  const candidates = [
+    path.join(resourcesDir, "frontend", "server.js"),
+    path.join(repoRoot, "frontend", ".next", "standalone", "server.js"),
+  ];
+
+  for (const server of candidates) {
+    if (fs.existsSync(server)) {
+      return { server, dir: path.dirname(server) };
+    }
+  }
+
+  return { server: null, dir: null };
 }
 
 function resolveSurrealBin(resourcesDir: string, binName: string): string | null {

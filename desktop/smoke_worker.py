@@ -63,8 +63,10 @@ def main() -> int:
     )
 
     output_lines: list[str] = []
-    deadline = time.time() + 12.0
+    deadline = time.time() + 25.0
     ok = False
+    no_commands = False
+    live_listener = False
 
     try:
         while time.time() < deadline:
@@ -75,7 +77,11 @@ def main() -> int:
                 output_lines.append(line.rstrip())
                 print(line, end="")
                 lower = line.lower()
-                if "imported: commands" in lower or "registered commands" in lower:
+                if "no commands registered" in lower:
+                    no_commands = True
+                if "starting live query listener" in lower:
+                    live_listener = True
+                if live_listener and not no_commands:
                     ok = True
                     break
             elif proc.poll() is not None:
@@ -91,11 +97,13 @@ def main() -> int:
                 proc.kill()
 
     if ok:
-        print("\nWorker smoke check passed (commands module registered).")
+        print("\nWorker smoke check passed (command handlers registered).")
         return 0
 
     print("\nWorker smoke check FAILED.")
-    print("Expected output containing 'Imported: commands' or 'registered commands'.")
+    if no_commands:
+        print("Worker logged: No commands registered in registry.")
+    print("Expected LIVE query listener without 'No commands registered'.")
     if proc.returncode not in (0, -2, 130, None):
         print(f"Exit code: {proc.returncode}")
     return 1

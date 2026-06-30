@@ -22,13 +22,16 @@ export async function waitForPort(
   host: string,
   port: number,
   timeoutMs: number,
-  intervalMs = 500
+  intervalMs = 500,
+  onTick?: (elapsedMs: number) => void
 ): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
+  const started = Date.now();
+  const deadline = started + timeoutMs;
   while (Date.now() < deadline) {
     if (await isPortOpen(host, port)) {
       return;
     }
+    onTick?.(Date.now() - started);
     await sleep(intervalMs);
   }
   throw new Error(`Timed out waiting for ${host}:${port}`);
@@ -89,14 +92,7 @@ export async function waitForFrontendReady(
       lastError = err instanceof Error ? err.message : String(err);
     }
 
-    // Next dev can accept TCP before the first page/API route is compiled.
-    try {
-      await waitForApiHealthy(apiUrl, 10_000);
-    } catch {
-      // keep waiting for the proxied /api/config path
-    }
-
-    await sleep(750);
+    await sleep(500);
   }
 
   throw new Error(`Frontend health check failed: ${lastError}`);
@@ -135,6 +131,18 @@ export async function waitForApiHealthy(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function tailLogFile(logPath: string, maxLines = 12): string {
+  try {
+    if (!fs.existsSync(logPath)) {
+      return "(log file empty)";
+    }
+    const lines = fs.readFileSync(logPath, "utf-8").split("\n").filter(Boolean);
+    return lines.slice(-maxLines).join("\n");
+  } catch {
+    return "(could not read log file)";
+  }
 }
 
 export function createLogStream(logPath: string): fs.WriteStream {

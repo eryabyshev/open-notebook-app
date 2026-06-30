@@ -142,7 +142,7 @@ worker: worker-start
 
 worker-start:
 	@echo "Starting surreal-commands worker..."
-	uv run --env-file .env surreal-commands-worker --import-modules commands
+	uv run --env-file .env python desktop/entry_worker.py
 
 worker-stop:
 	@echo "Stopping surreal-commands worker..."
@@ -162,7 +162,7 @@ start-all:
 	@uv run run_api.py &
 	@sleep 3
 	@echo "⚙️ Starting background worker..."
-	@uv run --env-file .env surreal-commands-worker --import-modules commands &
+	@uv run --env-file .env python desktop/entry_worker.py &
 	@sleep 2
 	@echo "🌐 Starting Next.js frontend..."
 	@echo "✅ All services started!"

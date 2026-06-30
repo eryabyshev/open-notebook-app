@@ -99,8 +99,8 @@ uv run --env-file .env python desktop/entry_worker.py
 | `entry_worker.py` | surreal-commands worker entry point |
 | `open-notebook-api.spec` | PyInstaller spec API |
 | `open-notebook-worker.spec` | PyInstaller spec worker |
-| `build_api.sh` / `build_worker.sh` / `build_all.sh` | Сборка |
-| `smoke_test.py` / `smoke_worker.py` | Smoke tests |
+| `build_api.sh` / `build_worker.sh` / `build_frontend.sh` / `build_all.sh` | Сборка |
+| `smoke_test.py` / `smoke_worker.py` / `smoke_standalone.py` | Smoke tests |
 
 ## Если сборка падает на import
 
@@ -152,6 +152,41 @@ Electron will:
 | `electron/src/env-manager.ts` | First-run credentials |
 | `electron/splash.html` | Startup splash screen |
 
-## Следующий шаг (Phase 3)
+## Standalone frontend (Phase 3)
 
-Frontend standalone bundle в `resources/frontend/` для production Electron build.
+Production UI на порту **8502** (как в Docker single-container).
+
+### Сборка
+
+```bash
+bash desktop/build_frontend.sh
+# или всё сразу:
+bash desktop/build_all.sh
+```
+
+Артефакт: `desktop/resources/frontend/server.js` (+ `.next/static`, `public`).
+
+### Запуск через Electron (standalone mode)
+
+```bash
+# SurrealDB v2 (Docker) + PyInstaller bundles должны быть готовы
+
+cd desktop/electron
+OPEN_NOTEBOOK_SKIP_SURREAL=1 npm run dev:standalone
+# UI: http://localhost:8502
+```
+
+Или без Electron — только frontend (API уже запущен отдельно):
+
+```bash
+cd desktop/resources/frontend
+PORT=8502 HOSTNAME=127.0.0.1 INTERNAL_API_URL=http://127.0.0.1:5055 node server.js
+```
+
+### Smoke test
+
+```bash
+uv run python desktop/smoke_standalone.py
+```
+
+## Следующий шаг (Phase 4)

@@ -8,7 +8,7 @@ Build:
 
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules, copy_metadata
 
 block_cipher = None
 
@@ -43,6 +43,7 @@ for dist_name in (
     "content-core",
     "open-notebook",
     "surreal-commands",
+    "pymupdf",
     "decorator",
     "proglog",
     "numpy",
@@ -97,6 +98,8 @@ hiddenimports = [
     "langgraph.checkpoint.sqlite.aio",
     "esperanto",
     "content_core",
+    "pymupdf",
+    "fitz",
     "ai_prompter",
     "podcast_creator",
     "imageio",
@@ -124,16 +127,23 @@ for pkg in (
 ):
     hiddenimports += collect_submodules(pkg)
 
-for pkg in ("imageio", "moviepy", "podcast_creator", "content_core"):
+for pkg in ("imageio", "moviepy", "podcast_creator", "content_core", "pymupdf"):
     try:
         hiddenimports += collect_submodules(pkg)
+    except Exception:
+        pass
+
+binaries = []
+for pkg in ("pymupdf",):
+    try:
+        binaries += collect_dynamic_libs(pkg)
     except Exception:
         pass
 
 a = Analysis(
     [str(ENTRY)],
     pathex=[str(ROOT)],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
