@@ -1,9 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec for Open Notebook API (desktop spike).
+PyInstaller spec for Open Notebook surreal-commands worker.
 
 Build:
-    ./desktop/build_api.sh
+    ./desktop/build_worker.sh
 """
 
 from pathlib import Path
@@ -13,9 +13,8 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy
 block_cipher = None
 
 ROOT = Path(SPECPATH).parent
-ENTRY = ROOT / "desktop" / "entry_api.py"
+ENTRY = ROOT / "desktop" / "entry_worker.py"
 
-# Bundled read-only assets
 datas = [
     (str(ROOT / "open_notebook" / "database" / "migrations"), "open_notebook/database/migrations"),
     (str(ROOT / "open_notebook" / "ai" / "assets"), "open_notebook/ai/assets"),
@@ -36,7 +35,6 @@ for package in (
     except Exception:
         pass
 
-# importlib.metadata.version() needs dist-info folders in frozen builds
 for dist_name in (
     "imageio",
     "imageio-ffmpeg",
@@ -44,11 +42,14 @@ for dist_name in (
     "podcast-creator",
     "content-core",
     "open-notebook",
+    "surreal-commands",
     "decorator",
     "proglog",
     "numpy",
     "pillow",
     "tqdm",
+    "typer",
+    "rich",
 ):
     try:
         datas += copy_metadata(dist_name)
@@ -56,45 +57,27 @@ for dist_name in (
         pass
 
 hiddenimports = [
-    # uvicorn / ASGI stack
-    "uvicorn",
-    "uvicorn.logging",
-    "uvicorn.loops",
-    "uvicorn.loops.auto",
-    "uvicorn.protocols",
-    "uvicorn.protocols.http",
-    "uvicorn.protocols.http.auto",
-    "uvicorn.protocols.http.h11_impl",
-    "uvicorn.protocols.websockets",
-    "uvicorn.protocols.websockets.auto",
-    "uvicorn.lifespan",
-    "uvicorn.lifespan.on",
-    "uvicorn.lifespan.off",
-    "h11",
-    "httptools",
-    "websockets",
-    "watchfiles",
-    # FastAPI / Starlette
-    "fastapi",
-    "starlette",
-    "starlette.middleware",
-    "starlette.routing",
-    "pydantic",
-    "pydantic_core",
-    "pydantic.deprecated.decorator",
-    "email_validator",
-    "multipart",
-    "python_multipart",
-    # App packages
-    "api",
-    "api.main",
+    "surreal_commands",
+    "surreal_commands.cli",
+    "surreal_commands.cli.worker",
+    "surreal_commands.core.worker",
+    "surreal_commands.core.registry",
+    "surreal_commands.core.service",
+    "typer",
+    "rich",
+    "rich.console",
+    "rich.panel",
+    "rich.json",
+    "click",
+    "commands",
+    "commands.embedding_commands",
+    "commands.source_commands",
+    "commands.podcast_commands",
+    "commands.example_commands",
+    "desktop.runtime_bootstrap",
     "open_notebook",
     "open_notebook.utils.frozen",
-    "desktop.runtime_bootstrap",
-    # Database / jobs
     "surrealdb",
-    "surreal_commands",
-    # AI stack (extend as build errors appear)
     "tiktoken",
     "tiktoken_ext",
     "tiktoken_ext.openai_public",
@@ -127,21 +110,21 @@ hiddenimports = [
     "anyio",
     "sniffio",
     "loguru",
+    "pydantic",
+    "pydantic_core",
     "cryptography",
-    "bcrypt",
 ]
 
-# Collect router and graph submodules dynamically
 for pkg in (
-    "api.routers",
     "open_notebook.graphs",
     "open_notebook.domain",
     "open_notebook.ai",
     "open_notebook.database",
+    "commands",
 ):
     hiddenimports += collect_submodules(pkg)
 
-for pkg in ("imageio", "moviepy", "podcast_creator", "content_core", "commands"):
+for pkg in ("imageio", "moviepy", "podcast_creator", "content_core"):
     try:
         hiddenimports += collect_submodules(pkg)
     except Exception:
@@ -156,7 +139,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["pytest", "IPython", "matplotlib", "tkinter"],
+    excludes=["pytest", "IPython", "matplotlib", "tkinter", "api", "uvicorn", "fastapi"],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -170,7 +153,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="open-notebook-api",
+    name="open-notebook-worker",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -191,5 +174,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="open-notebook-api",
+    name="open-notebook-worker",
 )

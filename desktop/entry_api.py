@@ -13,21 +13,10 @@ from __future__ import annotations
 
 import os
 import sys
-from pathlib import Path
 
+from desktop.runtime_bootstrap import bootstrap
 
-def _bootstrap() -> None:
-    if getattr(sys, "frozen", False):
-        os.chdir(Path(sys.executable).resolve().parent)
-        return
-
-    root = Path(__file__).resolve().parent.parent
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-    os.chdir(root)
-
-
-_bootstrap()
+bootstrap()
 
 from dotenv import load_dotenv
 

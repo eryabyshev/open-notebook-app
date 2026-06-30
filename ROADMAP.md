@@ -4,7 +4,7 @@
 
 **Цель:** один installer, offline-first данные на машине пользователя, UI в Electron, backend упакован через PyInstaller.
 
-**Статус:** Фаза 0 — **spike пройден** (API bundle + smoke test OK)  
+**Статус:** Фаза 1 — worker bundle готов (сборка + smoke_worker)  
 **Ориентир до beta:** 4–6 недель (после успешного spike)
 
 ---
@@ -138,12 +138,16 @@ resources/                  # артеfact сборки (gitignore)
 
 ### Фаза 1 — Worker + path fixes (1 неделя)
 
-- [ ] `desktop/entry_worker.py` + `open-notebook-worker.spec`
-- [ ] Worker smoke: podcast job / `process_source` end-to-end
-- [ ] `resource_path()` helper для frozen mode (`sys._MEIPASS`)
-- [ ] `DATA_FOLDER` из env в `open_notebook/config.py` (если ещё не в форке)
-- [ ] Версия приложения: `importlib.metadata` или bundled `pyproject.toml`
-- [ ] `API_RELOAD=false` по умолчанию в desktop entry points
+- [x] `desktop/entry_worker.py` + `open-notebook-worker.spec`
+- [x] `desktop/runtime_bootstrap.py` (общий bootstrap для API/worker)
+- [x] `desktop/build_worker.sh`, `build_all.sh`, `smoke_worker.py`
+- [x] `resource_path()` helper для frozen mode (`open_notebook/utils/frozen.py`)
+- [x] `DATA_FOLDER` из env в `open_notebook/config.py`
+- [x] Версия приложения: `importlib.metadata` + bundled `pyproject.toml`
+- [x] `API_RELOAD=false` / worker `--import-modules commands` в entry points
+- [x] `connection_tester.py` — assets через `resource_path()` (frozen-safe)
+- [x] `smoke_worker.py` — регистрация `commands` при старте
+- [ ] Worker smoke: `process_source` / podcast job end-to-end (нужен AI provider)
 
 ### Фаза 2 — Electron shell (1–2 недели)
 

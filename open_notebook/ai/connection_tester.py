@@ -217,13 +217,16 @@ def _generate_test_wav() -> io.BytesIO:
 # A short bundled clip of speech ("Hello there") used to validate STT models.
 # Real speech (vs. silence) makes the test transcription non-empty, so a passing
 # test visibly returns text instead of a blank result.
-_TEST_SPEECH_PATH = os.path.join(os.path.dirname(__file__), "assets", "test_speech.mp3")
+def _test_speech_path() -> str:
+    from open_notebook.utils.frozen import resource_path
+
+    return str(resource_path("open_notebook/ai/assets/test_speech.mp3"))
 
 
 def _get_test_audio() -> io.BytesIO:
     """Return a short speech clip for STT testing, or silence as a fallback."""
     try:
-        with open(_TEST_SPEECH_PATH, "rb") as f:
+        with open(_test_speech_path(), "rb") as f:
             buf = io.BytesIO(f.read())
         buf.name = "test_speech.mp3"
         buf.seek(0)

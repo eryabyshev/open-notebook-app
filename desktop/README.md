@@ -1,6 +1,6 @@
-# Desktop — Phase 0: PyInstaller API Spike
+# Desktop — PyInstaller bundles (API + Worker)
 
-Сборка standalone API bundle для будущего Electron-приложения.
+Сборка standalone Python bundles для будущего Electron-приложения.
 
 ## Быстрый старт
 
@@ -13,11 +13,9 @@ uv sync --group desktop
 ### 2. SurrealDB (обязательно **v2**)
 
 Open Notebook мигрирует схему под **SurrealDB v2** (как в `docker-compose.yml`).  
-Если поставить через Homebrew, часто ставится **v3** — миграции упадут с:
+Homebrew часто ставит **v3** — миграции упадут с `FLEXIBLE must be specified after TYPE`.
 
-`Parse error: FLEXIBLE must be specified after TYPE`
-
-**Рекомендуется Docker (v2):**
+**Docker (рекомендуется):**
 
 ```bash
 mkdir -p data/surrealdb
@@ -28,30 +26,7 @@ docker run -d --name surrealdb -p 8000:8000 \
   start --log info --user root --pass root rocksdb:/mydata/mydatabase.db
 ```
 
-Если раньше запускали SurrealDB v3 на `./data/surrealdb`, удалите каталог и создайте заново:
-
-```bash
-docker stop surrealdb 2>/dev/null; docker rm surrealdb 2>/dev/null
-rm -rf data/surrealdb && mkdir -p data/surrealdb
-# затем docker run ... как выше
-```
-
-Native CLI (только если это **v2**, не latest brew):
-
-```bash
-surreal version   # должно быть 2.x
-surreal start --user root --pass root --bind 127.0.0.1:8000 rocksdb:./data/surrealdb
-```
-
-Создайте `.env` из примера (один раз):
-
-```bash
-cp .env.example .env
-# для локального SurrealDB в .env должно быть:
-# SURREAL_URL=ws://127.0.0.1:8000/rpc
-```
-
-Минимум в `.env`:
+`.env` (минимум):
 
 ```env
 SURREAL_URL=ws://127.0.0.1:8000/rpc
@@ -63,49 +38,74 @@ OPEN_NOTEBOOK_ENCRYPTION_KEY=dev-secret-key-change-me
 ### 3. Сборка
 
 ```bash
-chmod +x desktop/build_api.sh   # один раз, если «permission denied»
-./desktop/build_api.sh
-# или без chmod:
+# API only
 bash desktop/build_api.sh
+
+# Worker only
+bash desktop/build_worker.sh
+
+# Оба bundle
+bash desktop/build_all.sh
 ```
 
-Артеfact: `desktop/dist/open-notebook-api/open-notebook-api`
+Артефакты:
 
-### 4. Запуск собранного API
+- `desktop/dist/open-notebook-api/open-notebook-api`
+- `desktop/dist/open-notebook-worker/open-notebook-worker`
+
+### 4. Запуск (3 процесса для полного функционала)
+
+**Терминал 1** — SurrealDB (Docker v2)
+
+**Терминал 2** — API:
 
 ```bash
 uv run --env-file .env desktop/dist/open-notebook-api/open-notebook-api
 ```
 
-### 5. Smoke test
+**Терминал 3** — Worker (фоновые задачи: embeddings, source processing, podcasts):
+
+```bash
+uv run --env-file .env desktop/dist/open-notebook-worker/open-notebook-worker
+```
+
+**Терминал 4 (опционально)** — UI:
+
+```bash
+cd frontend && npm run dev
+# http://127.0.0.1:3000
+```
+
+### 5. Smoke tests
 
 ```bash
 uv run python desktop/smoke_test.py
+uv run python desktop/smoke_worker.py
 ```
 
-## Dev без PyInstaller
+Dev без PyInstaller:
 
 ```bash
 uv run --env-file .env python desktop/entry_api.py
+uv run --env-file .env python desktop/entry_worker.py
 ```
 
 ## Структура
 
 | Файл | Назначение |
 |------|------------|
-| `entry_api.py` | Entry point для uvicorn (dev + frozen) |
-| `open-notebook-api.spec` | PyInstaller spec (`--onedir`) |
-| `build_api.sh` | Сборка + pre-download tiktoken |
-| `smoke_test.py` | HTTP smoke tests |
+| `runtime_bootstrap.py` | cwd / sys.path для dev и frozen |
+| `entry_api.py` | uvicorn entry point |
+| `entry_worker.py` | surreal-commands worker entry point |
+| `open-notebook-api.spec` | PyInstaller spec API |
+| `open-notebook-worker.spec` | PyInstaller spec worker |
+| `build_api.sh` / `build_worker.sh` / `build_all.sh` | Сборка |
+| `smoke_test.py` / `smoke_worker.py` | Smoke tests |
 
 ## Если сборка падает на import
 
-Добавьте модуль в `hiddenimports` в `open-notebook-api.spec` и пересоберите:
+Добавьте модуль в `hiddenimports` в соответствующий `.spec` и пересоберите.
 
-```bash
-./desktop/build_api.sh
-```
+## Следующий шаг (Phase 2)
 
-## Следующий шаг (Phase 1)
-
-Worker spec: `entry_worker.py` + `open-notebook-worker.spec`
+Electron shell — оркестрация SurrealDB + API + worker + Next.js в одном окне.
