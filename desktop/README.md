@@ -106,6 +106,52 @@ uv run --env-file .env python desktop/entry_worker.py
 
 Добавьте модуль в `hiddenimports` в соответствующий `.spec` и пересоберите.
 
-## Следующий шаг (Phase 2)
+## Electron shell (Phase 2)
 
-Electron shell — оркестрация SurrealDB + API + worker + Next.js в одном окне.
+### Electron (Phase 2)
+
+**Prerequisites:** PyInstaller bundles built (`bash desktop/build_all.sh`), frontend deps (`cd frontend && npm install`).
+
+**Dev with Docker SurrealDB v2** (recommended — no local surreal binary needed):
+
+```bash
+# Terminal 0: SurrealDB v2 in Docker (see section 2 above)
+
+# Terminal 1: Electron app
+cd desktop/electron
+npm install   # first time
+npm run dev
+```
+
+Electron will:
+1. Detect SurrealDB on `:8000` (or start bundled binary if available)
+2. Start frozen API + worker from `desktop/dist/` (or `uv run` if bundles missing)
+3. Start `npm run dev` in `frontend/` → window at http://127.0.0.1:3000
+
+**Env overrides:**
+
+| Variable | Purpose |
+|----------|---------|
+| `OPEN_NOTEBOOK_SKIP_SURREAL=1` | Use external SurrealDB only |
+| `OPEN_NOTEBOOK_USE_FROZEN=0` | Force `uv run` instead of PyInstaller bundles |
+| `OPEN_NOTEBOOK_SURREAL_BIN` | Path to SurrealDB v2 binary |
+| `OPEN_NOTEBOOK_FRONTEND_MODE=standalone` | Use `frontend/.next/standalone` on :8502 |
+
+**User data** (macOS): `~/Library/Application Support/open-notebook-desktop/`
+- `desktop.env` — generated credentials on first run (dev merges repo `.env` overrides)
+- `data/` — uploads, sqlite checkpoints, tiktoken cache
+- `logs/` — api.log, worker.log, surrealdb.log, frontend.log
+
+### Electron structure
+
+| Path | Purpose |
+|------|---------|
+| `electron/src/main.ts` | App lifecycle, splash, main window |
+| `electron/src/process-manager.ts` | Spawn / health / shutdown |
+| `electron/src/paths.ts` | Dev vs packaged resource paths |
+| `electron/src/env-manager.ts` | First-run credentials |
+| `electron/splash.html` | Startup splash screen |
+
+## Следующий шаг (Phase 3)
+
+Frontend standalone bundle в `resources/frontend/` для production Electron build.

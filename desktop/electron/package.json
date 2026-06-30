@@ -1,0 +1,52 @@
+{
+  "name": "open-notebook-desktop",
+  "version": "0.1.0",
+  "description": "Electron shell for Open Notebook",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && electron .",
+    "start": "electron .",
+    "pack": "npm run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.2"
+  },
+  "build": {
+    "appId": "ai.open-notebook.desktop",
+    "productName": "Open Notebook",
+    "directories": {
+      "output": "../resources/electron-dist"
+    },
+    "files": [
+      "dist/**/*",
+      "splash.html"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist/open-notebook-api",
+        "to": "api",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../dist/open-notebook-worker",
+        "to": "worker",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": ["dir"]
+    },
+    "win": {
+      "target": ["dir"]
+    },
+    "linux": {
+      "target": ["dir"]
+    }
+  }
+}

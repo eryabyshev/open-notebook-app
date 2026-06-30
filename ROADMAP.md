@@ -4,7 +4,7 @@
 
 **Цель:** один installer, offline-first данные на машине пользователя, UI в Electron, backend упакован через PyInstaller.
 
-**Статус:** Фаза 1 — worker bundle готов (сборка + smoke_worker)  
+**Статус:** Фаза 2 — Electron shell (scaffold)  
 **Ориентир до beta:** 4–6 недель (после успешного spike)
 
 ---
@@ -151,16 +151,17 @@ resources/                  # артеfact сборки (gitignore)
 
 ### Фаза 2 — Electron shell (1–2 недели)
 
-- [ ] `desktop/` scaffold (electron-forge или electron-builder)
-- [ ] Process manager:
-  - [ ] Порядок старта: SurrealDB → API → worker → Next.js
-  - [ ] Health check API перед открытием окна
-  - [ ] Graceful shutdown (SIGTERM всем детям)
-  - [ ] Single-instance lock
-- [ ] `BrowserWindow` → `http://127.0.0.1:8502`
-- [ ] Splash / «Starting services…» (можно опереться на `ConnectionGuard`)
-- [ ] Генерация `OPEN_NOTEBOOK_ENCRYPTION_KEY` и SurrealDB credentials на first run
-- [ ] Логи: `%userData%/logs/` (api, worker, surrealdb, frontend)
+- [x] `desktop/electron/` scaffold (Electron + TypeScript + electron-builder)
+- [x] Process manager:
+  - [x] Порядок старта: SurrealDB → API → worker → Next.js
+  - [x] Health check API перед открытием окна
+  - [x] Graceful shutdown (SIGTERM всем детям)
+  - [x] Single-instance lock
+- [x] `BrowserWindow` → `http://127.0.0.1:3000` (dev) / `:8502` (standalone)
+- [x] Splash / «Starting services…»
+- [x] Генерация `OPEN_NOTEBOOK_ENCRYPTION_KEY` и SurrealDB credentials на first run
+- [x] Логи: `%userData%/logs/` (api, worker, surrealdb, frontend)
+- [ ] E2E: полный запуск через Electron на macOS (без Docker, с bundled SurrealDB — Фаза 4)
 
 ### Фаза 3 — Frontend bundle (3–5 дней)
 
