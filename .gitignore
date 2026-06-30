@@ -36,6 +36,11 @@ share/python-wheels/
 # PyInstaller
 *.manifest
 *.spec
+!desktop/*.spec
+
+# Desktop build artifacts
+desktop/build/
+desktop/dist/
 
 # Installer logs
 pip-log.txt

@@ -7,6 +7,8 @@ from typing import List
 
 from loguru import logger
 
+from open_notebook.utils.frozen import migration_path
+
 from .repository import db_connection, repo_query
 
 
@@ -96,78 +98,38 @@ class AsyncMigrationManager:
     def __init__(self):
         """Initialize migration manager."""
         self.up_migrations = [
-            AsyncMigration.from_file("open_notebook/database/migrations/1.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/2.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/3.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/4.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/5.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/6.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/7.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/8.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/9.surrealql"),
-            AsyncMigration.from_file("open_notebook/database/migrations/10.surrealql"),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/11.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/12.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/13.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/14.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/15.surrealql"
-            ),
+            AsyncMigration.from_file(migration_path("1.surrealql")),
+            AsyncMigration.from_file(migration_path("2.surrealql")),
+            AsyncMigration.from_file(migration_path("3.surrealql")),
+            AsyncMigration.from_file(migration_path("4.surrealql")),
+            AsyncMigration.from_file(migration_path("5.surrealql")),
+            AsyncMigration.from_file(migration_path("6.surrealql")),
+            AsyncMigration.from_file(migration_path("7.surrealql")),
+            AsyncMigration.from_file(migration_path("8.surrealql")),
+            AsyncMigration.from_file(migration_path("9.surrealql")),
+            AsyncMigration.from_file(migration_path("10.surrealql")),
+            AsyncMigration.from_file(migration_path("11.surrealql")),
+            AsyncMigration.from_file(migration_path("12.surrealql")),
+            AsyncMigration.from_file(migration_path("13.surrealql")),
+            AsyncMigration.from_file(migration_path("14.surrealql")),
+            AsyncMigration.from_file(migration_path("15.surrealql")),
         ]
         self.down_migrations = [
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/1_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/2_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/3_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/4_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/5_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/6_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/7_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/8_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/9_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/10_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/11_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/12_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/13_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/14_down.surrealql"
-            ),
-            AsyncMigration.from_file(
-                "open_notebook/database/migrations/15_down.surrealql"
-            ),
+            AsyncMigration.from_file(migration_path("1_down.surrealql")),
+            AsyncMigration.from_file(migration_path("2_down.surrealql")),
+            AsyncMigration.from_file(migration_path("3_down.surrealql")),
+            AsyncMigration.from_file(migration_path("4_down.surrealql")),
+            AsyncMigration.from_file(migration_path("5_down.surrealql")),
+            AsyncMigration.from_file(migration_path("6_down.surrealql")),
+            AsyncMigration.from_file(migration_path("7_down.surrealql")),
+            AsyncMigration.from_file(migration_path("8_down.surrealql")),
+            AsyncMigration.from_file(migration_path("9_down.surrealql")),
+            AsyncMigration.from_file(migration_path("10_down.surrealql")),
+            AsyncMigration.from_file(migration_path("11_down.surrealql")),
+            AsyncMigration.from_file(migration_path("12_down.surrealql")),
+            AsyncMigration.from_file(migration_path("13_down.surrealql")),
+            AsyncMigration.from_file(migration_path("14_down.surrealql")),
+            AsyncMigration.from_file(migration_path("15_down.surrealql")),
         ]
         self.runner = AsyncMigrationRunner(
             up_migrations=self.up_migrations,

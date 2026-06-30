@@ -2,7 +2,6 @@ import asyncio
 import os
 import time
 import tomllib
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Request
@@ -29,14 +28,23 @@ VERSION_CACHE_TTL = 24 * 60 * 60
 
 
 def get_version() -> str:
-    """Read version from pyproject.toml"""
+    """Read version from installed package metadata or bundled pyproject.toml."""
     try:
-        pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+        from open_notebook.utils.version_utils import get_installed_version
+
+        return get_installed_version("open-notebook")
+    except Exception:
+        pass
+
+    try:
+        from open_notebook.utils.frozen import resource_path
+
+        pyproject_path = resource_path("pyproject.toml")
         with open(pyproject_path, "rb") as f:
             pyproject = tomllib.load(f)
             return pyproject.get("project", {}).get("version", "unknown")
     except Exception as e:
-        logger.warning(f"Could not read version from pyproject.toml: {e}")
+        logger.warning(f"Could not read application version: {e}")
         return "unknown"
 
 

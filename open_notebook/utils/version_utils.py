@@ -3,11 +3,11 @@ Version utilities for Open Notebook.
 Handles version comparison, GitHub version fetching, and package version management.
 """
 
+import tomllib
 from importlib.metadata import PackageNotFoundError, version
 from urllib.parse import urlparse
 
 import requests  # type: ignore
-import tomli
 from packaging.version import parse as parse_version
 
 
@@ -18,7 +18,6 @@ async def get_version_from_github_async(repo_url: str, branch: str = "main") -> 
     from urllib.parse import urlparse
 
     import httpx
-    import tomli
 
     # Parse the GitHub URL
     parsed_url = urlparse(repo_url)
@@ -41,7 +40,7 @@ async def get_version_from_github_async(repo_url: str, branch: str = "main") -> 
         response.raise_for_status()
 
     # Parse TOML content
-    pyproject_data = tomli.loads(response.text)
+    pyproject_data = tomllib.loads(response.content)
 
     # Try to find version
     try:
@@ -94,7 +93,7 @@ def get_version_from_github(repo_url: str, branch: str = "main") -> str:
     response.raise_for_status()
 
     # Parse TOML content
-    pyproject_data = tomli.loads(response.text)
+    pyproject_data = tomllib.loads(response.content)
 
     # Try to find version in different possible locations
     try:

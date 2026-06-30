@@ -1,7 +1,7 @@
 import os
 
-# ROOT DATA FOLDER
-DATA_FOLDER = "./data"
+# ROOT DATA FOLDER — override via DATA_FOLDER (desktop Electron userData, etc.)
+DATA_FOLDER = os.environ.get("DATA_FOLDER", "./data").strip() or "./data"
 
 # LANGGRAPH CHECKPOINT FILE
 sqlite_folder = f"{DATA_FOLDER}/sqlite-db"
