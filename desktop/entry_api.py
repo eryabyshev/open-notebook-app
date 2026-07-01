@@ -13,6 +13,20 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
+
+
+def _prepend_repo_root() -> None:
+    """Allow `import desktop` when running `python desktop/entry_*.py` from repo root."""
+    if getattr(sys, "frozen", False):
+        return
+    root = Path(__file__).resolve().parent.parent
+    root_str = str(root)
+    if root_str not in sys.path:
+        sys.path.insert(0, root_str)
+
+
+_prepend_repo_root()
 
 from desktop.runtime_bootstrap import bootstrap
 

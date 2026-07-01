@@ -6,8 +6,8 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
-    "dev": "npm run build && electron .",
-    "dev:standalone": "npm run build && OPEN_NOTEBOOK_FRONTEND_MODE=standalone electron .",
+    "dev": "npm run build && OPEN_NOTEBOOK_USE_FROZEN=0 OPEN_NOTEBOOK_RESTART_SERVICES=1 electron .",
+    "dev:standalone": "npm run build && OPEN_NOTEBOOK_USE_FROZEN=0 OPEN_NOTEBOOK_RESTART_SERVICES=1 OPEN_NOTEBOOK_FRONTEND_MODE=standalone electron .",
     "start": "electron .",
     "pack": "npm run build && electron-builder --dir"
   },

@@ -29,6 +29,9 @@ for package in (
     "langgraph",
     "langchain",
     "content_core",
+    "docling",
+    "docling_core",
+    "ocrmac",
 ):
     try:
         datas += collect_data_files(package, include_py_files=True)
@@ -44,6 +47,15 @@ for dist_name in (
     "open-notebook",
     "surreal-commands",
     "pymupdf",
+    "docling",
+    "docling-core",
+    "ocrmac",
+    "docling-ibm-models",
+    "docling-parse",
+    "easyocr",
+    "torch",
+    "torchvision",
+    "transformers",
     "decorator",
     "proglog",
     "numpy",
@@ -98,6 +110,12 @@ hiddenimports = [
     "langgraph.checkpoint.sqlite.aio",
     "esperanto",
     "content_core",
+    "docling",
+    "docling_core",
+    "ocrmac",
+    "docling_ibm_models",
+    "docling_parse",
+    "easyocr",
     "pymupdf",
     "fitz",
     "ai_prompter",
@@ -127,14 +145,25 @@ for pkg in (
 ):
     hiddenimports += collect_submodules(pkg)
 
-for pkg in ("imageio", "moviepy", "podcast_creator", "content_core", "pymupdf"):
+for pkg in (
+    "imageio",
+    "moviepy",
+    "podcast_creator",
+    "content_core",
+    "pymupdf",
+    "docling",
+    "docling_core",
+    "ocrmac",
+    "docling_ibm_models",
+    "easyocr",
+):
     try:
         hiddenimports += collect_submodules(pkg)
     except Exception:
         pass
 
 binaries = []
-for pkg in ("pymupdf",):
+for pkg in ("pymupdf", "torch", "torchvision"):
     try:
         binaries += collect_dynamic_libs(pkg)
     except Exception:

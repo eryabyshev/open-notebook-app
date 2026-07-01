@@ -14,6 +14,10 @@ from open_notebook.domain.content_settings import ContentSettings
 from open_notebook.domain.notebook import Asset, Source
 from open_notebook.domain.transformation import Transformation
 from open_notebook.graphs.transformation import graph as transform_graph
+from open_notebook.utils.docling_ocr import describe_ocr_engine
+from open_notebook.utils.docling_patch import apply_docling_patch
+
+apply_docling_patch()
 
 
 class SourceState(TypedDict):
@@ -32,23 +36,11 @@ class TransformationState(TypedDict):
 
 
 async def content_process(state: SourceState) -> dict:
-    content_settings = ContentSettings(
-        default_content_processing_engine_doc="auto",
-        default_content_processing_engine_url="auto",
-        default_embedding_option="ask",
-        auto_delete_files="yes",
-        youtube_preferred_languages=[
-            "en",
-            "pt",
-            "es",
-            "de",
-            "nl",
-            "en-GB",
-            "fr",
-            "hi",
-            "ja",
-        ],
-    )
+    try:
+        content_settings = await ContentSettings.get_instance()
+    except Exception as e:
+        logger.warning(f"Failed to load content settings from DB, using defaults: {e}")
+        content_settings = ContentSettings()
     content_state: Dict[str, Any] = state["content_state"]  # type: ignore[assignment]
 
     content_state["url_engine"] = (
@@ -58,6 +50,14 @@ async def content_process(state: SourceState) -> dict:
         content_settings.default_content_processing_engine_doc or "auto"
     )
     content_state["output_format"] = "markdown"
+
+    logger.info(
+        "Extracting source content: file_path={!r} url={!r} document_engine={!r} ocr={}",
+        content_state.get("file_path"),
+        content_state.get("url"),
+        content_state.get("document_engine"),
+        describe_ocr_engine(),
+    )
 
     # Add speech-to-text model configuration from Default Models
     try:

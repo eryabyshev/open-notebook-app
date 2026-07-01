@@ -7,8 +7,41 @@
 ### 1. Зависимости
 
 ```bash
-uv sync --group desktop
+uv lock && uv sync --group desktop
 ```
+
+**Docling** (OCR для сканов PDF) включён в основные зависимости (`docling>=2.74.0`).
+
+OCR по платформе (автоматически при `document_engine=docling|auto`):
+
+| ОС | Движок |
+|----|--------|
+| macOS | **ocrmac** (Apple Vision, `ru-RU` + `en-US`) |
+| Windows / Linux | **Tesseract CLI** (`rus` + `eng`) |
+
+Windows / Linux — установите Tesseract и языковой пакет:
+
+```bash
+# macOS (Homebrew, если тестируете fallback)
+brew install tesseract tesseract-lang
+
+# Ubuntu/Debian
+sudo apt install tesseract-ocr tesseract-ocr-rus
+
+# Windows (chocolatey)
+choco install tesseract
+```
+
+Проверка:
+
+```bash
+uv lock && uv sync --group desktop
+uv run python desktop/test_pdf_extract.py ~/path/to/scan.pdf
+```
+
+Переопределения: `OPEN_NOTEBOOK_TESSERACT_CMD`, `TESSDATA_PREFIX`.
+
+**Troubleshooting OCR:** если docling падает с `Unsupported configuration: torch.PP-OCRv6.det.small`, выполните `uv lock && uv sync` — в проекте зафиксирован `rapidocr<3.9` (fallback).
 
 ### 2. SurrealDB (обязательно **v2**)
 
@@ -125,15 +158,19 @@ npm run dev
 
 Electron will:
 1. Detect SurrealDB on `:8000` (or start bundled binary if available)
-2. Start frozen API + worker from `desktop/dist/` (or `uv run` if bundles missing)
+2. Start API + worker via **`uv run`** (dev default; latest OCR/docling code)
 3. Start `npm run dev` in `frontend/` → window at http://127.0.0.1:3000
+
+If PDF upload fails instantly (~0.1s) in worker.log, the old **frozen** worker may be running — use `npm run dev` (sets `USE_FROZEN=0`) or rebuild: `bash desktop/build_worker.sh`.
 
 **Env overrides:**
 
 | Variable | Purpose |
 |----------|---------|
 | `OPEN_NOTEBOOK_SKIP_SURREAL=1` | Use external SurrealDB only |
-| `OPEN_NOTEBOOK_USE_FROZEN=0` | Force `uv run` instead of PyInstaller bundles |
+| `OPEN_NOTEBOOK_USE_FROZEN=0` | Force `uv run` instead of PyInstaller bundles (default in `npm run dev`) |
+| `OPEN_NOTEBOOK_USE_FROZEN=1` | Force frozen bundles from `desktop/dist/` |
+| `OPEN_NOTEBOOK_RESTART_SERVICES=1` | Do not reuse already-running API/worker ports |
 | `OPEN_NOTEBOOK_SURREAL_BIN` | Path to SurrealDB v2 binary |
 | `OPEN_NOTEBOOK_FRONTEND_MODE=standalone` | Use `frontend/.next/standalone` on :8502 |
 

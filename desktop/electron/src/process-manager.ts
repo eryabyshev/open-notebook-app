@@ -136,7 +136,16 @@ export class ProcessManager {
             env,
             stdio: ["ignore", "pipe", "pipe"],
           })
-        : spawn("uv", ["run", "python", path.join("desktop", "entry_api.py")], {
+        : spawn(
+            "uv",
+            [
+              "run",
+              "--project",
+              this.paths.repoRoot,
+              "python",
+              path.join(this.paths.repoRoot, "desktop", "entry_api.py"),
+            ],
+            {
             cwd: this.paths.repoRoot,
             env,
             stdio: ["ignore", "pipe", "pipe"],
@@ -163,7 +172,16 @@ export class ProcessManager {
             env,
             stdio: ["ignore", "pipe", "pipe"],
           })
-        : spawn("uv", ["run", "python", path.join("desktop", "entry_worker.py")], {
+        : spawn(
+            "uv",
+            [
+              "run",
+              "--project",
+              this.paths.repoRoot,
+              "python",
+              path.join(this.paths.repoRoot, "desktop", "entry_worker.py"),
+            ],
+            {
             cwd: this.paths.repoRoot,
             env,
             stdio: ["ignore", "pipe", "pipe"],
