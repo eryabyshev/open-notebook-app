@@ -1,5 +1,6 @@
 import asyncio
 import os
+import uuid
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -53,35 +54,25 @@ SOURCE_TYPE_EXPRESSION = (
 
 
 def generate_unique_filename(original_filename: str, upload_folder: str) -> str:
-    """Generate unique filename like Streamlit app (append counter if file exists)."""
+    """Save uploads under an ASCII-only disk name (docling/C++ safe paths)."""
     file_path = Path(upload_folder)
     file_path.mkdir(parents=True, exist_ok=True)
 
-    # Strip directory components to prevent path traversal
     safe_filename = os.path.basename(original_filename)
     if not safe_filename:
         raise ValueError("Invalid filename")
 
-    # Split filename and extension
-    stem = Path(safe_filename).stem
-    suffix = Path(safe_filename).suffix
+    suffix = Path(safe_filename).suffix.lower()
+    if not suffix:
+        suffix = ".bin"
 
-    # Check if file exists and generate unique name
-    counter = 0
-    while True:
-        if counter == 0:
-            new_filename = safe_filename
-        else:
-            new_filename = f"{stem} ({counter}){suffix}"
-
-        full_path = file_path / new_filename
-        # Verify resolved path stays within upload folder
-        resolved = full_path.resolve()
-        if not str(resolved).startswith(str(file_path.resolve()) + os.sep):
-            raise ValueError("Invalid filename: path traversal detected")
-        if not resolved.exists():
-            return str(resolved)
-        counter += 1
+    # UUID avoids Cyrillic/spaces in paths that break docling-parse on some platforms.
+    new_filename = f"{uuid.uuid4().hex}{suffix}"
+    full_path = file_path / new_filename
+    resolved = full_path.resolve()
+    if not str(resolved).startswith(str(file_path.resolve()) + os.sep):
+        raise ValueError("Invalid filename: path traversal detected")
+    return str(resolved)
 
 
 async def save_uploaded_file(upload_file: UploadFile) -> str:
@@ -403,7 +394,13 @@ async def create_source(
                 source_asset = None
 
             source = Source(
-                title=source_data.title or "Processing...",
+                title=source_data.title
+                or (
+                    os.path.basename(upload_file.filename)
+                    if source_data.type == "upload" and upload_file and upload_file.filename
+                    else None
+                )
+                or "Processing...",
                 topics=[],
                 asset=source_asset,
             )

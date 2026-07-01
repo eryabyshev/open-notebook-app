@@ -227,3 +227,45 @@ uv run python desktop/smoke_standalone.py
 ```
 
 ## Следующий шаг (Phase 4)
+
+### Бинарные зависимости + installer
+
+```bash
+# Полная сборка installer (SurrealDB + PyInstaller + frontend + electron --dir)
+bash desktop/build_installer.sh
+
+# Только SurrealDB v2 для текущей ОС
+bash desktop/download_surrealdb.sh
+
+# Cross-download для CI matrix
+bash desktop/download_surrealdb.sh linux-amd64
+
+# Размеры артефактов
+bash desktop/estimate_installer_size.sh
+```
+
+Версия SurrealDB: `desktop/binaries.env` (`SURREALDB_VERSION=2.5.0`, **v2 only**).
+
+Packaged app (macOS): `desktop/resources/electron-dist/mac-arm64/Open Notebook.app`
+
+Запуск без Docker — SurrealDB берётся из `Resources/surrealdb/surreal`:
+
+```bash
+open "desktop/resources/electron-dist/mac-arm64/Open Notebook.app"
+```
+
+Dev по-прежнему: `OPEN_NOTEBOOK_SKIP_SURREAL=1 npm run dev` + Docker SurrealDB.
+
+### Структура `desktop/resources/` после сборки
+
+| Путь | Содержимое |
+|------|------------|
+| `resources/surrealdb/surreal` | SurrealDB v2 binary |
+| `resources/frontend/` | Next.js standalone |
+| `resources/electron-dist/` | Electron pack / `.dmg` |
+| `dist/open-notebook-api/` | PyInstaller API |
+| `dist/open-notebook-worker/` | PyInstaller worker |
+
+Ориентир размера: **600 MB – 1 GB** (worker с docling/torch — основной вклад).
+
+## Следующий шаг (Phase 5)

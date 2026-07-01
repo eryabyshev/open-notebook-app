@@ -15,6 +15,12 @@ block_cipher = None
 ROOT = Path(SPECPATH).parent
 ENTRY = ROOT / "desktop" / "entry_worker.py"
 
+import sys
+
+sys.path.insert(0, str(ROOT))
+from desktop.pyinstaller_binaries import collect_ffmpeg_binaries
+from desktop.pyinstaller_datas import collect_docling_parse_datas
+
 datas = [
     (str(ROOT / "open_notebook" / "database" / "migrations"), "open_notebook/database/migrations"),
     (str(ROOT / "open_notebook" / "ai" / "assets"), "open_notebook/ai/assets"),
@@ -31,12 +37,22 @@ for package in (
     "content_core",
     "docling",
     "docling_core",
+    "docling_parse",
     "ocrmac",
 ):
     try:
         datas += collect_data_files(package, include_py_files=True)
     except Exception:
         pass
+
+# docling-parse C++ layer needs pdf_resources (see docling#1714)
+try:
+    datas += collect_data_files("docling_parse", includes=["pdf_resources_v2/**"])
+    datas += collect_data_files("docling_parse", includes=["pdf_resources/**"])
+except Exception:
+    pass
+
+datas += collect_docling_parse_datas()
 
 for dist_name in (
     "imageio",
@@ -162,8 +178,8 @@ for pkg in (
     except Exception:
         pass
 
-binaries = []
-for pkg in ("pymupdf", "torch", "torchvision"):
+binaries = collect_ffmpeg_binaries()
+for pkg in ("pymupdf", "torch", "torchvision", "imageio_ffmpeg"):
     try:
         binaries += collect_dynamic_libs(pkg)
     except Exception:

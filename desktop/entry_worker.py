@@ -39,6 +39,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from open_notebook.utils.docling_frozen import configure_docling_for_frozen
+
+configure_docling_for_frozen()
+
 from open_notebook.utils.docling_patch import apply_docling_patch
 
 apply_docling_patch()

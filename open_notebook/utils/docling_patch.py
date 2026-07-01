@@ -11,6 +11,10 @@ def apply_docling_patch() -> None:
         return
     _PATCHED = True
 
+    from open_notebook.utils.docling_frozen import configure_docling_for_frozen
+
+    configure_docling_for_frozen()
+
     import content_core.processors.docling as docling_mod
     from content_core.common.state import ProcessSourceState
     from content_core.config import CONFIG
@@ -24,7 +28,13 @@ def apply_docling_patch() -> None:
         if not source:
             raise ValueError("No input provided for Docling extraction.")
 
-        result = converter.convert(source)
+        try:
+            result = converter.convert(source)
+        except Exception as exc:
+            raise ValueError(
+                f"Could not extract content with Docling: {exc}"
+            ) from exc
+
         doc = result.document
 
         cfg_fmt = (

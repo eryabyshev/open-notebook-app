@@ -9,7 +9,8 @@
     "dev": "npm run build && OPEN_NOTEBOOK_USE_FROZEN=0 OPEN_NOTEBOOK_RESTART_SERVICES=1 electron .",
     "dev:standalone": "npm run build && OPEN_NOTEBOOK_USE_FROZEN=0 OPEN_NOTEBOOK_RESTART_SERVICES=1 OPEN_NOTEBOOK_FRONTEND_MODE=standalone electron .",
     "start": "electron .",
-    "pack": "npm run build && electron-builder --dir"
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -21,13 +22,19 @@
     "appId": "ai.open-notebook.desktop",
     "productName": "Open Notebook",
     "directories": {
-      "output": "../resources/electron-dist"
+      "output": "../resources/electron-dist",
+      "buildResources": "../icons"
     },
     "files": [
       "dist/**/*",
       "splash.html"
     ],
     "extraResources": [
+      {
+        "from": "../resources/surrealdb",
+        "to": "surrealdb",
+        "filter": ["**/*"]
+      },
       {
         "from": "../dist/open-notebook-api",
         "to": "api",
@@ -46,13 +53,16 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": ["dir"]
+      "icon": "icon.png",
+      "target": ["dir", "dmg"]
     },
     "win": {
-      "target": ["dir"]
+      "icon": "icon.png",
+      "target": ["dir", "nsis"]
     },
     "linux": {
-      "target": ["dir"]
+      "icon": "icon.png",
+      "target": ["dir", "AppImage"]
     }
   }
 }

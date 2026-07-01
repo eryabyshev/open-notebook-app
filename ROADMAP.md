@@ -4,7 +4,7 @@
 
 **Цель:** один installer, offline-first данные на машине пользователя, UI в Electron, backend упакован через PyInstaller.
 
-**Статус:** Фаза 3 — standalone frontend bundle  
+**Статус:** Фаза 4 — бинарные зависимости + packaging  
 **Ориентир до beta:** 4–6 недель (после успешного spike)
 
 ---
@@ -174,11 +174,13 @@ resources/                  # артеfact сборки (gitignore)
 
 ### Фаза 4 — Бинарные зависимости + packaging (1 неделя)
 
-- [ ] SurrealDB v2: download per platform (macOS arm64/x64, Windows x64, Linux x64)
-- [ ] ffmpeg через `imageio-ffmpeg` в worker/api spec
-- [ ] electron-builder: `extraResources` для api/, worker/, surrealdb/, frontend/
-- [ ] Иконки приложения (`.icns`, `.ico`)
-- [ ] Оценка размера installer (ориентир: 600 MB – 1 GB)
+- [x] SurrealDB v2: download per platform (`desktop/download_surrealdb.sh`, pin `2.5.0` in `desktop/binaries.env`)
+- [x] ffmpeg через `imageio-ffmpeg` в worker/api spec (`desktop/pyinstaller_binaries.py`)
+- [x] electron-builder: `extraResources` для api/, worker/, surrealdb/, frontend/
+- [x] Иконки приложения (`desktop/generate_app_icon.py` → `desktop/icons/icon.png`)
+- [x] `desktop/build_installer.sh`, `desktop/estimate_installer_size.sh`
+- [ ] Ручная проверка packaged `.app` на macOS без Docker
+- [ ] Оценка размера installer после полной worker-сборки с docling/torch
 
 ### Фаза 5 — UX и production (1–2 недели)
 

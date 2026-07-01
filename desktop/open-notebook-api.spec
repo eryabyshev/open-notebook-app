@@ -15,6 +15,11 @@ block_cipher = None
 ROOT = Path(SPECPATH).parent
 ENTRY = ROOT / "desktop" / "entry_api.py"
 
+import sys
+
+sys.path.insert(0, str(ROOT))
+from desktop.pyinstaller_binaries import collect_ffmpeg_binaries
+
 # Bundled read-only assets
 datas = [
     (str(ROOT / "open_notebook" / "database" / "migrations"), "open_notebook/database/migrations"),
@@ -150,7 +155,7 @@ for pkg in ("imageio", "moviepy", "podcast_creator", "content_core", "commands")
 a = Analysis(
     [str(ENTRY)],
     pathex=[str(ROOT)],
-    binaries=[],
+    binaries=collect_ffmpeg_binaries(),
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
