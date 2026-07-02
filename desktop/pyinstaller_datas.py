@@ -1,5 +1,26 @@
 """PyInstaller data collection helpers for desktop bundles."""
 
+from __future__ import annotations
+
+from pathlib import Path
+
+_DESKTOP_DIR = Path(__file__).resolve().parent
+
+
+def collect_docling_models_datas() -> list[tuple[str, str]]:
+    """
+    Bundle prefetched Docling ML models for offline frozen workers.
+
+    Built by ``desktop/download_docling_models.sh`` into
+    ``desktop/cache/docling-models/``.
+    """
+    models = _DESKTOP_DIR / "cache" / "docling-models"
+    if not models.is_dir():
+        return []
+    if not any(models.iterdir()):
+        return []
+    return [(str(models), "docling/models")]
+
 
 def collect_docling_parse_datas() -> list[tuple[str, str]]:
     """

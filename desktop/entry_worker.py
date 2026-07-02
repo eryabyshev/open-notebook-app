@@ -19,6 +19,68 @@ import sys
 from pathlib import Path
 
 
+def _is_frozen() -> bool:
+    return bool(getattr(sys, "frozen", False))
+
+
+def _handle_frozen_multiprocessing_child() -> None:
+    """
+    Torch/docling spawn worker children by re-execing the PyInstaller binary with
+    ``-B -S -c "from multiprocessing.spawn import spawn_main; ..."``.
+
+    Those children must not enter the surreal-commands typer CLI.
+    """
+    if not _is_frozen():
+        return
+
+    argv_text = " ".join(sys.argv)
+    if not (
+        "--multiprocessing-fork" in sys.argv
+        or "multiprocessing.spawn" in argv_text
+        or "multiprocessing.resource_tracker" in argv_text
+        or "-c" in sys.argv
+    ):
+        return
+
+    import multiprocessing
+
+    multiprocessing.freeze_support()
+    from multiprocessing.spawn import spawn_main
+
+    spawn_main()
+    raise SystemExit(0)
+
+
+def _sanitize_frozen_argv() -> None:
+    """
+    Drop Python interpreter flags from sys.argv in frozen builds.
+
+    Leftover flags (e.g. ``-B``, ``-S``) make typer fail with "No such option".
+    """
+    if not _is_frozen() or len(sys.argv) <= 1:
+        return
+
+    cleaned = [sys.argv[0]]
+    args = sys.argv[1:]
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg.startswith("--"):
+            cleaned.append(arg)
+            i += 1
+            continue
+        if arg in ("-c", "-m"):
+            i += 2
+            continue
+        if arg.startswith("-") and arg[1:2].isalpha():
+            # -B, -S, -Werror, -Xutf8, etc.
+            i += 1
+            continue
+        cleaned.append(arg)
+        i += 1
+    sys.argv = cleaned
+
+
 def _prepend_repo_root() -> None:
     """Allow `import desktop` when running `python desktop/entry_*.py` from repo root."""
     if getattr(sys, "frozen", False):
@@ -30,6 +92,13 @@ def _prepend_repo_root() -> None:
 
 
 _prepend_repo_root()
+_handle_frozen_multiprocessing_child()
+_sanitize_frozen_argv()
+
+if _is_frozen():
+    import multiprocessing
+
+    multiprocessing.freeze_support()
 
 from desktop.runtime_bootstrap import bootstrap
 
@@ -78,6 +147,14 @@ def run() -> None:
     register_commands()
     frozen = getattr(sys, "frozen", False)
     print(f"Starting Open Notebook worker (frozen={frozen})")
+    if frozen:
+        from open_notebook.utils.docling_frozen import resolve_docling_artifacts_path
+
+        artifacts = resolve_docling_artifacts_path()
+        if artifacts:
+            print(f"Docling artifacts: {artifacts}")
+        else:
+            print("WARNING: Docling artifacts not found in bundle — OCR may fail offline")
     main()
 
 

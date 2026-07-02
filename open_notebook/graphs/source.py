@@ -1,6 +1,11 @@
 import operator
 from typing import Any, Dict, List, Optional
 
+from open_notebook.utils.docling_ocr import describe_ocr_engine
+from open_notebook.utils.docling_patch import apply_docling_patch
+
+apply_docling_patch()
+
 from content_core import extract_content
 from content_core.common import ProcessSourceState
 from langchain_core.runnables import RunnableConfig
@@ -13,11 +18,10 @@ from open_notebook.ai.models import Model, ModelManager
 from open_notebook.domain.content_settings import ContentSettings
 from open_notebook.domain.notebook import Asset, Source
 from open_notebook.domain.transformation import Transformation
+from open_notebook.exceptions import ConfigurationError
 from open_notebook.graphs.transformation import graph as transform_graph
-from open_notebook.utils.docling_ocr import describe_ocr_engine
-from open_notebook.utils.docling_patch import apply_docling_patch
 
-apply_docling_patch()
+model_manager = ModelManager()
 
 
 class SourceState(TypedDict):
@@ -61,7 +65,6 @@ async def content_process(state: SourceState) -> dict:
 
     # Add speech-to-text model configuration from Default Models
     try:
-        model_manager = ModelManager()
         defaults = await model_manager.get_defaults()
         if defaults.default_speech_to_text_model:
             stt_model = await Model.get(defaults.default_speech_to_text_model)
@@ -130,8 +133,15 @@ async def save_source(state: SourceState) -> dict:
 
     if state["embed"]:
         if source.full_text and source.full_text.strip():
-            logger.debug("Embedding content for vector search")
-            await source.vectorize()
+            embedding_model = await model_manager.get_embedding_model()
+            if embedding_model:
+                logger.debug("Embedding content for vector search")
+                await source.vectorize()
+            else:
+                logger.warning(
+                    f"Source {source.id}: no embedding model configured, "
+                    "skipping vectorization (text is still saved)"
+                )
         else:
             logger.warning(
                 f"Source {source.id} has no text content to embed, skipping vectorization"
@@ -167,9 +177,16 @@ async def transform_content(state: TransformationState) -> Optional[dict]:
     transformation: Transformation = state["transformation"]
 
     logger.debug(f"Applying transformation {transformation.name}")
-    result = await transform_graph.ainvoke(
-        dict(input_text=content, transformation=transformation)  # type: ignore[arg-type]
-    )
+    try:
+        result = await transform_graph.ainvoke(
+            dict(input_text=content, transformation=transformation)  # type: ignore[arg-type]
+        )
+    except ConfigurationError as exc:
+        logger.warning(
+            f"Skipping transformation {transformation.name!r} for source {source.id}: {exc}"
+        )
+        return None
+
     await source.add_insight(transformation.title, result["output"])
     return {
         "transformation": [

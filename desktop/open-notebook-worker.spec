@@ -19,7 +19,7 @@ import sys
 
 sys.path.insert(0, str(ROOT))
 from desktop.pyinstaller_binaries import collect_ffmpeg_binaries
-from desktop.pyinstaller_datas import collect_docling_parse_datas
+from desktop.pyinstaller_datas import collect_docling_models_datas, collect_docling_parse_datas
 
 datas = [
     (str(ROOT / "open_notebook" / "database" / "migrations"), "open_notebook/database/migrations"),
@@ -53,6 +53,7 @@ except Exception:
     pass
 
 datas += collect_docling_parse_datas()
+datas += collect_docling_models_datas()
 
 for dist_name in (
     "imageio",
@@ -131,6 +132,10 @@ hiddenimports = [
     "ocrmac",
     "docling_ibm_models",
     "docling_parse",
+    "docling.models.plugins.defaults",
+    "docling.models.stages.picture_description.picture_description_vlm_engine_model",
+    "docling.models.stages.picture_description.picture_description_api_model",
+    "docling.models.stages.picture_description.picture_description_vlm_model",
     "easyocr",
     "pymupdf",
     "fitz",

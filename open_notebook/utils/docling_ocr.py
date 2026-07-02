@@ -35,7 +35,32 @@ def build_pdf_pipeline_options() -> Optional["PdfPipelineOptions"]:
         TesseractCliOcrOptions,
     )
 
-    pipeline_options = PdfPipelineOptions(do_ocr=True)
+    from open_notebook.utils.docling_frozen import resolve_docling_artifacts_path
+
+    pipeline_kwargs: dict = {
+        "do_ocr": True,
+        # VLM / enrichment plugins are not bundled in the desktop worker — text+OCR only.
+        "do_picture_description": False,
+        "do_chart_extraction": False,
+        "do_formula_enrichment": False,
+        "do_code_enrichment": False,
+        "generate_picture_images": False,
+    }
+
+    # Docling 2.64+ may still resolve picture-description stage unless options are set.
+    try:
+        from docling.datamodel.pipeline_options import PictureDescriptionApiOptions
+
+        pipeline_kwargs["picture_description_options"] = PictureDescriptionApiOptions()
+    except ImportError:
+        pass
+
+    pipeline_options = PdfPipelineOptions(**pipeline_kwargs)
+
+    artifacts = resolve_docling_artifacts_path()
+    if artifacts:
+        pipeline_options.artifacts_path = str(artifacts)
+        logger.debug("Docling artifacts_path={}", artifacts)
 
     if sys.platform == "darwin":
         try:

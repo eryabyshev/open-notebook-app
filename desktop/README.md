@@ -70,7 +70,12 @@ OPEN_NOTEBOOK_ENCRYPTION_KEY=dev-secret-key-change-me
 
 ### 3. Сборка
 
+`build_worker.sh` автоматически скачивает модели Docling (`docling-tools models download`) в `desktop/cache/docling-models/` и вкладывает их в worker bundle как `docling/models`. Без этого frozen OCR на сканах PDF не работает офлайн.
+
 ```bash
+# Только модели (если нужно обновить без полной пересборки)
+bash desktop/download_docling_models.sh
+
 # API only
 bash desktop/build_api.sh
 
@@ -133,6 +138,7 @@ uv run --env-file .env python desktop/entry_worker.py
 | `open-notebook-api.spec` | PyInstaller spec API |
 | `open-notebook-worker.spec` | PyInstaller spec worker |
 | `build_api.sh` / `build_worker.sh` / `build_frontend.sh` / `build_all.sh` | Сборка |
+| `download_docling_models.sh` | Prefetch Docling models → `desktop/cache/docling-models/` (bundled in worker) |
 | `smoke_test.py` / `smoke_worker.py` / `smoke_standalone.py` | Smoke tests |
 
 ## Если сборка падает на import

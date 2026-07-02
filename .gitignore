@@ -41,6 +41,7 @@ share/python-wheels/
 # Desktop build artifacts
 desktop/build/
 desktop/dist/
+desktop/cache/
 desktop/electron/node_modules/
 desktop/electron/dist/
 desktop/resources/

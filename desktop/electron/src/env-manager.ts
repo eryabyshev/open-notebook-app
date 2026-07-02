@@ -126,6 +126,9 @@ function parseEnvFile(content: string, dataFolder: string): DesktopEnv {
 }
 
 function serializeEnv(env: DesktopEnv): string {
+  const quote = (value: string) =>
+    /[\s#"'\\]/.test(value) ? `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : value;
+
   return [
     "# Open Notebook desktop environment (auto-generated on first run)",
     `OPEN_NOTEBOOK_ENCRYPTION_KEY=${env.OPEN_NOTEBOOK_ENCRYPTION_KEY}`,
@@ -134,11 +137,11 @@ function serializeEnv(env: DesktopEnv): string {
     `SURREAL_PASSWORD=${env.SURREAL_PASSWORD}`,
     `SURREAL_NAMESPACE=${env.SURREAL_NAMESPACE}`,
     `SURREAL_DATABASE=${env.SURREAL_DATABASE}`,
-    `DATA_FOLDER=${env.DATA_FOLDER}`,
+    `DATA_FOLDER=${quote(env.DATA_FOLDER)}`,
     `API_HOST=${env.API_HOST}`,
     `API_PORT=${env.API_PORT}`,
     `INTERNAL_API_URL=${env.INTERNAL_API_URL}`,
-    `TIKTOKEN_CACHE_DIR=${env.TIKTOKEN_CACHE_DIR}`,
+    `TIKTOKEN_CACHE_DIR=${quote(env.TIKTOKEN_CACHE_DIR)}`,
     "",
   ].join("\n");
 }

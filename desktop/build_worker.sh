@@ -11,6 +11,9 @@ uv sync --group desktop
 echo "==> Pre-download tiktoken encoding"
 uv run python -c "import tiktoken; tiktoken.get_encoding('o200k_base')"
 
+echo "==> Pre-download Docling models (layout, OCR, …)"
+bash "$ROOT/desktop/download_docling_models.sh"
+
 echo "==> Build worker bundle (PyInstaller --onedir)"
 uv run pyinstaller --clean --noconfirm \
   --distpath "$ROOT/desktop/dist" \
