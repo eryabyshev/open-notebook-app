@@ -32,6 +32,10 @@ from desktop.runtime_bootstrap import bootstrap
 
 bootstrap()
 
+from desktop.ffmpeg_frozen import configure_ffmpeg_for_frozen
+
+configure_ffmpeg_for_frozen()
+
 from dotenv import load_dotenv
 
 load_dotenv()

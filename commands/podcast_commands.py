@@ -15,6 +15,14 @@ from open_notebook.podcasts.models import (
     SpeakerProfile,
     _resolve_model_config,
 )
+from open_notebook.utils.gemini_tts import (
+    apply_gemini_tts_patch,
+    apply_podcast_clip_fixup_patch,
+    podcast_tts_config,
+)
+
+apply_gemini_tts_patch()
+apply_podcast_clip_fixup_patch()
 
 try:
     from podcast_creator import configure, create_podcast
@@ -183,7 +191,7 @@ async def generate_podcast_command(
                     )
                     sp_dict["tts_provider"] = prov
                     sp_dict["tts_model"] = model
-                    sp_dict["tts_config"] = conf
+                    sp_dict["tts_config"] = podcast_tts_config(model, conf)
                 except Exception as e:
                     logger.warning(
                         f"Failed to resolve TTS for speaker profile '{sp_name}', "
@@ -201,7 +209,7 @@ async def generate_podcast_command(
                         )
                         speaker["tts_provider"] = prov
                         speaker["tts_model"] = model
-                        speaker["tts_config"] = conf
+                        speaker["tts_config"] = podcast_tts_config(model, conf)
                     except Exception as e:
                         logger.warning(
                             f"Failed to resolve per-speaker TTS for '{speaker.get('name')}': {e}"

@@ -104,6 +104,10 @@ from desktop.runtime_bootstrap import bootstrap
 
 bootstrap()
 
+from desktop.ffmpeg_frozen import configure_ffmpeg_for_frozen
+
+configure_ffmpeg_for_frozen()
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -117,6 +121,17 @@ from open_notebook.utils.docling_patch import apply_docling_patch
 apply_docling_patch()
 
 from commands import register_commands
+from desktop.esperanto_frozen_imports import preload_esperanto_providers
+
+preload_esperanto_providers()
+
+from open_notebook.utils.gemini_tts import (
+    apply_gemini_tts_patch,
+    apply_podcast_clip_fixup_patch,
+)
+
+apply_gemini_tts_patch()
+apply_podcast_clip_fixup_patch()
 
 try:
     from surreal_commands.cli.worker import main
